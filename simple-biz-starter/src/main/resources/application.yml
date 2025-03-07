@@ -1,0 +1,75 @@
+server:
+  port: 38888
+
+gmv:
+  api:
+    host: https://epimore.cn
+#    host: http://172.18.38.186:18567
+    playLive: /session/api/play/live/stream
+    playBack: /session/api/play/back/stream
+    playBackSeek: /session/api/play/back/seek
+    playBackSpeed: /session/api/play/back/speed
+    save: /session/api/save/stream
+  token:
+    enable: true
+    whitelist:
+      - /user/login
+      - /**/swagger*/**
+      - /**/v2/api-docs
+      - /**/*.html
+      - /**/*.js
+      - /**/*.css
+      - /**/*.png
+
+
+swagger2:
+  basePackage: cn.epimore.gmv.service.web
+  verison: 0.0.1
+  title: 视频服务接口
+  enable: true
+
+spring:
+  datasource:
+    type: com.alibaba.druid.pool.DruidDataSource
+    driver-class-name: com.mysql.cj.jdbc.Driver    # com.mysql.jdbc.Driver
+    url: jdbc:mysql://imysql:33061/gmv?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=false
+    username: epimore
+    password: Kz986542.
+    druid:
+      initialSize: 5
+      minIdle: 5
+      maxActive: 20
+      maxWait: 60000
+      timeBetweenEvictionRunsMillis: 60000
+      minEvictableIdleTimeMillis: 300000
+  mvc:
+    async:
+      request-timeout: 20s
+
+
+mybatis:
+  type-aliases-package: cn.epimore.service
+  configuration:
+    map-underscore-to-camel-case: true
+    use-generated-keys: true
+    default-fetch-size: 100
+    default-statement-timeout: 30
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+pagehelper:
+  helper-dialect: mysql
+  reasonable: true
+  support-methods-arguments: true
+  params: count=countSql
+  offset-as-page-num: true
+  row-bounds-with-count: true
+
+
+logging:
+  file:
+    name: logs/simple-biz.log
+    max-history: 30
+    max-size: 10MB
+    total-size-cap: 300MB
+  level:
+    cn.epimore.service: debug
