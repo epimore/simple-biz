@@ -13,6 +13,7 @@ public class GmvApiConfig {
     private String playBackSeek;
     private String playBackSpeed;
     private String save;
+    private String ptz;
 
     public String getHost() {
         return host;
@@ -60,5 +61,13 @@ public class GmvApiConfig {
 
     public void setSave(String save) {
         this.save = save;
+    }
+
+    public String getPtz() {
+        return ptz;
+    }
+
+    public void setPtz(String ptz) {
+        this.ptz = ptz;
     }
 }

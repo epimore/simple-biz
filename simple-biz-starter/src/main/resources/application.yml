@@ -4,12 +4,13 @@ server:
 gmv:
   api:
     host: https://epimore.cn
-#    host: http://172.18.38.186:18567
+    #    host: http://172.18.38.186:18567
     playLive: /session/api/play/live/stream
     playBack: /session/api/play/back/stream
     playBackSeek: /session/api/play/back/seek
     playBackSpeed: /session/api/play/back/speed
     save: /session/api/save/stream
+    ptz: /session/api/control/ptz
   token:
     enable: true
     whitelist:

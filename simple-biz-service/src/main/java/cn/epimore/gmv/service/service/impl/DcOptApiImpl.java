@@ -3,7 +3,7 @@ package cn.epimore.gmv.service.service.impl;
 import cn.epimore.gmv.api.common.GmvSessionResult;
 import cn.epimore.gmv.api.model.*;
 import cn.epimore.gmv.service.cfg.GmvApiConfig;
-import cn.epimore.gmv.service.service.api.StreamApi;
+import cn.epimore.gmv.service.service.api.DcOptApi;
 import cn.epimore.gmv.service.utils.GmvHttpUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -13,12 +13,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Service
-public class StreamApiImpl implements StreamApi {
+public class DcOptApiImpl implements DcOptApi {
 
     private final GmvApiConfig gmvApiConfig;
 
     @Autowired
-    public StreamApiImpl(GmvApiConfig gmvApiConfig) {
+    public DcOptApiImpl(GmvApiConfig gmvApiConfig) {
         this.gmvApiConfig = gmvApiConfig;
     }
 
@@ -84,6 +84,22 @@ public class StreamApiImpl implements StreamApi {
         GmvSessionResult<Boolean> result = GmvHttpUtil.post(url, map, Boolean.class);
         if (result == null) {
             throw new RuntimeException("倍速操作失败");
+        }
+        if (result.getCode() != 200) {
+            throw new RuntimeException(result.getMsg());
+        }
+        return result.getData();
+    }
+
+    @Override
+    public boolean cmdControlPtz(PtzControlModel ptzControlModel) {
+        String url = String.format("%s%s", gmvApiConfig.getHost(), gmvApiConfig.getPtz());
+//        Map<String, Object> map = new HashMap<>();
+//        map.put("streamId", speedModel.getStreamId());
+//        map.put("speedRate", speedModel.getSpeedRate());
+        GmvSessionResult<Boolean> result = GmvHttpUtil.post(url, ptzControlModel, Boolean.class);
+        if (result == null) {
+            throw new RuntimeException("云台控制失败");
         }
         if (result.getCode() != 200) {
             throw new RuntimeException(result.getMsg());

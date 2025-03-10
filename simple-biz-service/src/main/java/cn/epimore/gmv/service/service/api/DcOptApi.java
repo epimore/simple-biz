@@ -2,7 +2,7 @@ package cn.epimore.gmv.service.service.api;
 
 import cn.epimore.gmv.api.model.*;
 
-public interface StreamApi {
+public interface DcOptApi {
 
     //获取点播流地址
     StreamUri getPlayLiveUri(IdMap idMap);
@@ -15,4 +15,7 @@ public interface StreamApi {
 
     //操作历史监控倍速播放
     boolean cmdPlayBackSpeed(PlaySpeedModel speedModel);
+
+    //操作云台PTZ
+    boolean cmdControlPtz(PtzControlModel ptzControlModel);
 }
