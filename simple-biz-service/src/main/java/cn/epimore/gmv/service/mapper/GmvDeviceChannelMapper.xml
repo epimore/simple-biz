@@ -22,7 +22,7 @@
             <result property="password" column="PASSWORD" jdbcType="VARCHAR"/>
             <result property="longitude" column="LONGITUDE" jdbcType="DECIMAL"/>
             <result property="latitude" column="LATITUDE" jdbcType="DECIMAL"/>
-            <result property="ptzType" column="PTZ_TYPE" jdbcType="CHAR"/>
+            <result property="ptzType" column="PTZ_TYPE" jdbcType="INTEGER"/>
             <result property="supplyLightType" column="SUPPLY_LIGHT_TYPE" jdbcType="CHAR"/>
             <result property="aliasName" column="ALIAS_NAME" jdbcType="VARCHAR"/>
     </resultMap>
@@ -62,7 +62,7 @@
         ,#{status,jdbcType=VARCHAR},#{civilCode,jdbcType=VARCHAR},#{address,jdbcType=VARCHAR}
         ,#{parental,jdbcType=CHAR},#{block,jdbcType=VARCHAR},#{parentId,jdbcType=VARCHAR}
         ,#{ipAddress,jdbcType=VARCHAR},#{port,jdbcType=INTEGER},#{password,jdbcType=VARCHAR}
-        ,#{longitude,jdbcType=DECIMAL},#{latitude,jdbcType=DECIMAL},#{ptzType,jdbcType=CHAR}
+        ,#{longitude,jdbcType=DECIMAL},#{latitude,jdbcType=DECIMAL},#{ptzType,jdbcType=INTEGER}
         ,#{supplyLightType,jdbcType=CHAR},#{aliasName,jdbcType=VARCHAR})
     </insert>
     <insert id="insertSelective">
@@ -107,7 +107,7 @@
                 <if test="password != null">#{password,jdbcType=VARCHAR},</if>
                 <if test="longitude != null">#{longitude,jdbcType=DECIMAL},</if>
                 <if test="latitude != null">#{latitude,jdbcType=DECIMAL},</if>
-                <if test="ptzType != null">#{ptzType,jdbcType=CHAR},</if>
+                <if test="ptzType != null">#{ptzType,jdbcType=INTEGER},</if>
                 <if test="supplyLightType != null">#{supplyLightType,jdbcType=CHAR},</if>
                 <if test="aliasName != null">#{aliasName,jdbcType=VARCHAR},</if>
         </trim>
@@ -161,7 +161,7 @@
                     LATITUDE = #{latitude,jdbcType=DECIMAL},
                 </if>
                 <if test="ptzType != null">
-                    PTZ_TYPE = #{ptzType,jdbcType=CHAR},
+                    PTZ_TYPE = #{ptzType,jdbcType=INTEGER},
                 </if>
                 <if test="supplyLightType != null">
                     SUPPLY_LIGHT_TYPE = #{supplyLightType,jdbcType=CHAR},
@@ -190,7 +190,7 @@
             PASSWORD =  #{password,jdbcType=VARCHAR},
             LONGITUDE =  #{longitude,jdbcType=DECIMAL},
             LATITUDE =  #{latitude,jdbcType=DECIMAL},
-            PTZ_TYPE =  #{ptzType,jdbcType=CHAR},
+            PTZ_TYPE =  #{ptzType,jdbcType=INTEGER},
             SUPPLY_LIGHT_TYPE =  #{supplyLightType,jdbcType=CHAR},
             ALIAS_NAME =  #{aliasName,jdbcType=VARCHAR}
         where   DEVICE_ID = #{deviceId,jdbcType=VARCHAR} AND CHANNEL_ID = #{channelId,jdbcType=VARCHAR} 

@@ -93,10 +93,15 @@ public class GmvDeviceChannel implements Serializable {
     @ApiModelProperty("纬度")
     private BigDecimal latitude;
     /**
-     * 摄像机类型扩展，标识摄像机类型： 1-球机； 2-半球； 3-固定枪机；4-遥控枪机。
+     * 摄像机类型扩展，标识摄像机类型： 1-球机； 2-半球； 3-固定枪机；4-遥控枪机,5遥控半球，6多目设备拼接通道，7多目设备分割通道。
      */
-    @ApiModelProperty("摄像机类型扩展，标识摄像机类型： 1-球机； 2-半球； 3-固定枪机；4-遥控枪机。")
-    private String ptzType;
+    @ApiModelProperty("摄像机类型扩展，标识摄像机类型： 1-球机； 2-半球； 3-固定枪机；4-遥控枪机,5遥控半球，6多目设备拼接通道，7多目设备分割通道。")
+    private Integer ptzType;
+    /**
+     * 摄像机类型扩展，标识摄像机类型： 1-球机； 2-半球； 3-固定枪机；4-遥控枪机,5遥控半球，6多目设备拼接通道，7多目设备分割通道。
+     */
+    @ApiModelProperty("摄像机类型扩展，标识摄像机类型： 1-球机； 2-半球； 3-固定枪机；4-遥控枪机,5遥控半球，6多目设备拼接通道，7多目设备分割通道。")
+    private String ptzTypeStr;
     /**
      * 摄像机补光属性。 1-无补光、 2-红外补光、 3-白光补光。
      */
@@ -244,11 +249,11 @@ public class GmvDeviceChannel implements Serializable {
         this.latitude = latitude;
     }
 
-    public String getPtzType() {
+    public Integer getPtzType() {
         return ptzType;
     }
 
-    public void setPtzType(String ptzType) {
+    public void setPtzType(Integer ptzType) {
         this.ptzType = ptzType;
     }
 
@@ -266,5 +271,37 @@ public class GmvDeviceChannel implements Serializable {
 
     public void setAliasName(String aliasName) {
         this.aliasName = aliasName;
+    }
+
+    public String getPtzTypeStr() {
+        String ptzTypeStr = "";
+        if (this.ptzType == null) {
+            return ptzTypeStr;
+        }
+        switch (this.ptzType) {
+            case 1:
+                ptzTypeStr = "球机";
+                break;
+            case 2:
+                ptzTypeStr = "半球";
+                break;
+            case 3:
+                ptzTypeStr = "固定枪机";
+                break;
+            case 4:
+                ptzTypeStr = "遥控枪机";
+                break;
+            case 5:
+                ptzTypeStr = "遥控半球";
+                break;
+            case 6:
+                ptzTypeStr = "多目设备拼接通道";
+                break;
+            case 7:
+                ptzTypeStr = "多目设备分割通道";
+                break;
+        }
+
+        return ptzTypeStr;
     }
 }

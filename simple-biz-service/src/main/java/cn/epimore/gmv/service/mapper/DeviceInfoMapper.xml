@@ -71,7 +71,7 @@
         <result property="password" column="PASSWORD" jdbcType="VARCHAR"/>
         <result property="longitude" column="LONGITUDE" jdbcType="DECIMAL"/>
         <result property="latitude" column="LATITUDE" jdbcType="DECIMAL"/>
-        <result property="ptzType" column="PTZ_TYPE" jdbcType="CHAR"/>
+        <result property="ptzType" column="PTZ_TYPE" jdbcType="INTEGER"/>
         <result property="supplyLightType" column="SUPPLY_LIGHT_TYPE" jdbcType="CHAR"/>
         <result property="aliasName" column="ALIAS_NAME" jdbcType="VARCHAR"/>
     </resultMap>
