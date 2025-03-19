@@ -55,6 +55,7 @@ public class GmvTokenFilter implements Filter {
                 httpResponse.getWriter().write("Unauthorized: Invalid token");
                 return;
             }
+            // 将 token 存入 ThreadLocal，便于服务查找当前用户
             GmvTokenHolder.setToken(token);
             // 如果 token 验证通过，继续处理请求
             chain.doFilter(request, response);
@@ -64,7 +65,7 @@ public class GmvTokenFilter implements Filter {
     }
 
     private boolean validateToken(String token) {
-        return StringUtils.equals("user001-gmv-token", token);
+        return GmvTokenHolder.checkToken(token);
     }
 
 

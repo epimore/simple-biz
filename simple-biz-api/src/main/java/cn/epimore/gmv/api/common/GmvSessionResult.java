@@ -5,6 +5,15 @@ public class GmvSessionResult<T> {
     private String msg;
     private int code;
 
+    public GmvSessionResult() {
+    }
+
+    public GmvSessionResult(T data, String msg, int code) {
+        this.data = data;
+        this.msg = msg;
+        this.code = code;
+    }
+
     public T getData() {
         return data;
     }

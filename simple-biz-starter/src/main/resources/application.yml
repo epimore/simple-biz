@@ -15,6 +15,7 @@ gmv:
     enable: true
     whitelist:
       - /user/login
+      - /event/alarm
       - /**/swagger*/**
       - /**/v2/api-docs
       - /**/*.html
