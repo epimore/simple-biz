@@ -98,7 +98,7 @@
                c.ALIAS_NAME
         FROM GMV_DEVICE d
                  INNER JOIN GMV_DEVICE_CHANNEL c ON d.DEVICE_ID = c.DEVICE_ID
-        where d.DEVICE_ID = #{deviceId,jdbcType=VARCHAR}
+        where d.DEVICE_ID = #{deviceId,jdbcType=VARCHAR} AND c.PARENT_ID=c.DEVICE_ID
     </select>
 
 </mapper>
