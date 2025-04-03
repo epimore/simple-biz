@@ -41,6 +41,10 @@ public class UserController {
             logger.error("login异常", e);
             return Result.failure("登录失败");
         }
-
+    }
+    @PostMapping("/checkToken")
+    @ApiOperation(value = "checkToken", notes = "login")
+    public ResponseEntity<Boolean> checkToken() {
+        return Result.success(true);
     }
 }

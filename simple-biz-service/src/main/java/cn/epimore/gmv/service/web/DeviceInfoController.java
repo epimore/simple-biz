@@ -1,11 +1,10 @@
 package cn.epimore.gmv.service.web;
 
 import cn.epimore.gmv.api.common.Result;
-import cn.epimore.gmv.api.model.GmvDeviceChannel;
-import cn.epimore.gmv.api.model.GmvDeviceInfo;
-import cn.epimore.gmv.api.model.IdMap;
+import cn.epimore.gmv.api.model.*;
 import cn.epimore.gmv.service.service.api.DeviceInfoApi;
 import com.alibaba.fastjson2.JSON;
+import com.github.pagehelper.PageInfo;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.slf4j.Logger;
@@ -54,6 +53,19 @@ public class DeviceInfoController {
         } catch (Exception e) {
             logger.error("getGmvDeviceChannelList异常", e);
             return Result.failure("查询相机通道列表失败.");
+        }
+    }
+
+    @PostMapping("/channel/images")
+    @ApiOperation(value = "images", notes = "查询相机抓拍列表")
+    public ResponseEntity<PageInfo<ImageInfo>> getImageInfo(@RequestBody @NotNull ImageQuery query) {
+        logger.info("getImageInfo,查询相机抓拍列表;{}", JSON.toJSONString(query));
+        try {
+            PageInfo<ImageInfo> info = deviceInfoApi.getImageInfo(query);
+            return Result.success(info);
+        } catch (Exception e) {
+            logger.error("getImageInfo", e);
+            return Result.failure("查询相机抓拍列表失败.");
         }
     }
 

@@ -36,7 +36,7 @@
         MAX_CAMERA,
         IF(d.`status` = 1 AND DATE_ADD(d.register_time,INTERVAL d.register_expires SECOND)>NOW(), 1, 0) AS `STATUS`,
         GB_VERSION,
-        COUNT(c.channel_id) AS cameraInCount,
+        sum(if(c.PARENT_ID=c.DEVICE_ID,0,1)) AS cameraInCount,
         IF
         (
         d.`status` = 0
@@ -74,6 +74,7 @@
         <result property="ptzType" column="PTZ_TYPE" jdbcType="INTEGER"/>
         <result property="supplyLightType" column="SUPPLY_LIGHT_TYPE" jdbcType="CHAR"/>
         <result property="aliasName" column="ALIAS_NAME" jdbcType="VARCHAR"/>
+        <result property="picUrl" column="picUrl" jdbcType="VARCHAR"/>
     </resultMap>
     <select id="getGmvDeviceChannelList" resultMap="ChannelBaseResultMap">
         SELECT d.DEVICE_ID,
@@ -81,8 +82,10 @@
                c.NAME,
                c.MANUFACTURER,
                c.MODEL,
-               IF(d.`status` = 1 AND DATE_ADD(d.register_time,INTERVAL d.register_expires SECOND)>NOW() and
-                  (c.`status` = 'ON' OR c.`status` = 'ONLINE' OR c.`status` = ''), "ON", "OFF") `STATUS`,
+               IF(d.`status` = 1
+                      AND DATE_ADD(d.register_time, INTERVAL d.register_expires SECOND) > NOW()
+                      AND (c.`status` = 'ON' OR c.`status` = 'ONLINE' OR c.`status` = ''),
+                  "ON", "OFF")                                          `STATUS`,
                c.CIVIL_CODE,
                c.ADDRESS,
                c.PARENTAL,
@@ -95,10 +98,41 @@
                c.LATITUDE,
                c.PTZ_TYPE,
                c.SUPPLY_LIGHT_TYPE,
-               c.ALIAS_NAME
+               c.ALIAS_NAME,
+               CONCAT(a.DIR_PATH, "/", a.FILE_NAME, ".", a.FILE_FORMAT) picUrl
         FROM GMV_DEVICE d
-                 INNER JOIN GMV_DEVICE_CHANNEL c ON d.DEVICE_ID = c.DEVICE_ID
-        where d.DEVICE_ID = #{deviceId,jdbcType=VARCHAR} AND c.PARENT_ID=c.DEVICE_ID
+                 INNER JOIN GMV_DEVICE_CHANNEL c
+                            ON d.DEVICE_ID = c.DEVICE_ID
+                 LEFT JOIN GMV_FILE_INFO a
+                           ON a.ID = (SELECT MAX(ID)
+                                      FROM GMV_FILE_INFO
+                                      WHERE FILE_TYPE = 0
+                                        AND IS_DEL = 0
+                                        and DEVICE_ID = c.DEVICE_ID
+                                        AND CHANNEL_ID = c.CHANNEL_ID)
+        where d.DEVICE_ID = #{deviceId,jdbcType=VARCHAR}
+          AND c.PARENT_ID = c.DEVICE_ID
+        order by c.CHANNEL_ID
+    </select>
+    <select id="getImageInfo" resultType="cn.epimore.gmv.api.model.ImageInfo">
+        SELECT a.ID id,
+        a.BIZ_ID bizId,
+        a.NOTE note,
+        CONCAT(a.DIR_PATH, "/", a.FILE_NAME, ".", a.FILE_FORMAT) picUrl,
+        a.FILE_SIZE picSize,
+        a.BIZ_TIME bizTime
+        FROM GMV_FILE_INFO a
+        WHERE a.DEVICE_ID = #{deviceId,jdbcType=VARCHAR}
+        AND a.CHANNEL_ID = #{channelId,jdbcType=VARCHAR}
+        AND a.IS_DEL = 0
+        AND a.FILE_TYPE = 0
+        <if test="startTime != null">
+            AND a.BIZ_TIME &gt;= #{startTime,jdbcType=TIMESTAMP}
+        </if>
+        <if test="endTime != null">
+            AND a.BIZ_TIME &lt; #{endTime,jdbcType=TIMESTAMP}
+        </if>
+        ORDER BY a.ID ASC
     </select>
 
 </mapper>

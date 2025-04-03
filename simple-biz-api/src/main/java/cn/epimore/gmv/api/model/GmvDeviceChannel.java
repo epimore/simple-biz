@@ -1,6 +1,7 @@
 package cn.epimore.gmv.api.model;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -112,6 +113,19 @@ public class GmvDeviceChannel implements Serializable {
      */
     @ApiModelProperty("设备别名")
     private String aliasName;
+    @ApiModelProperty("设备图片")
+    private String picUrl;
+
+    public String getPicUrl() {
+        if (StringUtils.isNotEmpty(picUrl) && picUrl.startsWith("./")) {
+            return picUrl.substring(1);
+        }
+        return picUrl;
+    }
+
+    public void setPicUrl(String picUrl) {
+        this.picUrl = picUrl;
+    }
 
     public String getDeviceId() {
         return deviceId;

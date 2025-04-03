@@ -26,7 +26,7 @@ public class EventController {
     @ApiOperation(value = "alarm", notes = "设备alarm事件")
     public GmvSessionResult<Boolean> alarm(@RequestBody AlarmInfo info) {
         try {
-            logger.info("alarm:{}", JSON.toJSONString(info));
+//            logger.info("alarm:{}", JSON.toJSONString(info));
             eventApi.handleAlarmEvent(null, info);
             return new GmvSessionResult<>(true, "success", 200);
         } catch (Exception e) {
