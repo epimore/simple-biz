@@ -3,23 +3,32 @@ package cn.epimore.gmv.service.service.impl;
 import cn.epimore.gmv.api.common.GmvSessionResult;
 import cn.epimore.gmv.api.model.*;
 import cn.epimore.gmv.service.cfg.GmvApiConfig;
+import cn.epimore.gmv.service.mapper.DeviceInfoMapper;
 import cn.epimore.gmv.service.service.api.DcOptApi;
+import cn.epimore.gmv.service.utils.DateTimeUtil;
 import cn.epimore.gmv.service.utils.GmvHttpUtil;
+import org.apache.commons.collections4.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.ZoneId;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
 public class DcOptApiImpl implements DcOptApi {
+    private final static Logger logger = LoggerFactory.getLogger(DcOptApiImpl.class);
 
     private final GmvApiConfig gmvApiConfig;
+    private final DeviceInfoMapper deviceInfoMapper;
 
     @Autowired
-    public DcOptApiImpl(GmvApiConfig gmvApiConfig) {
+    public DcOptApiImpl(GmvApiConfig gmvApiConfig, DeviceInfoMapper deviceInfoMapper) {
         this.gmvApiConfig = gmvApiConfig;
+        this.deviceInfoMapper = deviceInfoMapper;
     }
 
     @Override
@@ -107,5 +116,154 @@ public class DcOptApiImpl implements DcOptApi {
         return result.getData();
     }
 
+    @Override
+    public boolean createDownloadTask(PlayBackReq backReq) {
+        ZoneId zoneId = ZoneId.systemDefault();
+        Long st = backReq.getSt().atZone(zoneId).toInstant().getEpochSecond();
+        Long et = backReq.getEt().atZone(zoneId).toInstant().getEpochSecond();
+        if (st >= et) {
+            throw new RuntimeException("开始时间大于结束时间");
+        }
+        if (st < 0) {
+            throw new RuntimeException("开始时间或结束时间小于0");
+        }
+        if (et - st > 2 * 60 * 60) {
+            throw new RuntimeException("录制时间不能大于2小时");
+        }
+        int count = deviceInfoMapper.getRecordingCount(backReq);
+        if (count > 0) {
+            throw new RuntimeException("该设备已存在下载任务");
+        }
+        String url = String.format("%s%s", gmvApiConfig.getHost(), gmvApiConfig.getDownload());
+        Map<String, Object> map = new HashMap<>();
+        map.put("device_id", backReq.getDeviceId());
+        map.put("channel_id", backReq.getChannelId());
+        //idr,sps,pps冗余增加一秒，缓存一秒
+        map.put("st", st - 1);
+        map.put("et", et + 1);
+        GmvSessionResult<Boolean> result = GmvHttpUtil.post(url, map, Boolean.class);
+        if (result == null) {
+            throw new RuntimeException("创建下载任务失败");
+        }
+        if (result.getCode() != 200) {
+            throw new RuntimeException(result.getMsg());
+        }
+        return true;
+    }
+
+    @Override
+    public boolean tearDownTask(String bizId) {
+        String url = String.format("%s%s", gmvApiConfig.getHost(), gmvApiConfig.getTeardown());
+        Map<String, Object> map = new HashMap<>();
+        map.put("stream_id", bizId);
+        GmvSessionResult<Boolean> result = GmvHttpUtil.post(url, map, Boolean.class);
+        if (result == null) {
+            throw new RuntimeException("停止失败");
+        }
+        if (result.getCode() != 200) {
+            throw new RuntimeException(result.getMsg());
+        }
+        return true;
+    }
+
+    @Override
+    public List<RecordVideoInfo> downTaskInfo(IdMap idMap) {
+        List<RecordVideoInfo> infos = deviceInfoMapper.getRecordVideoInfos(idMap);
+        if (CollectionUtils.isNotEmpty(infos)) {
+            for (RecordVideoInfo info : infos) {
+                long st = DateTimeUtil.toTimestampSeconds(info.getStartTime());
+                long et = DateTimeUtil.toTimestampSeconds(info.getEndTime());
+                if (info.getState() == 0) {
+                    String url = String.format("%s%s", gmvApiConfig.getHost(), gmvApiConfig.getDowning());
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("stream_id", info.getFileId());
+                    map.put("stream_server", info.getNodeName());
+                    GmvSessionResult<RecordingInfo> result = GmvHttpUtil.post(url, map, RecordingInfo.class);
+                    if (result == null) {
+                        logger.info("查询下载任务失败");
+                        continue;
+                    }
+                    if (result.getCode() != 200) {
+                        logger.info("查询下载任务失败,{}", result.getMsg());
+                        continue;
+                    }
+                    RecordingInfo data = result.getData();
+
+                    String mbs = buildMbs(data.getBytesSec());
+                    if (data.getTimestamp() < st) {
+                        info.setStateStr("-|" + mbs);
+                    }
+                    if (data.getTimestamp() >= st && data.getTimestamp() <= et) {
+                        //保留两位小数，装换为百分比字符串
+                        double ratio = (double) (data.getTimestamp() - st) / (et - st);
+                        String percentStr = String.format("%.2f %%", ratio * 100);
+                        info.setStateStr(percentStr + "|" + mbs);
+                    }
+                    if (data.getTimestamp() > et) {
+                        info.setStateStr("97.28 %|" + mbs);
+                    }
+                } else {
+                    switch (info.getState()) {
+                        case 1:
+                            info.setStateStr("100.00 %|完成");
+                            info.setSizeStr(buildFileSize(info.getSize()));
+                            break;
+                        case 2:
+                            long bt = DateTimeUtil.toTimestampSeconds(info.getBizTime());
+                            double ratio = (double) (bt - st) / (et - st);
+                            String percentStr = String.format("%.2f %%", ratio * 100);
+                            info.setStateStr(percentStr + "|结束");
+                            info.setSizeStr(buildFileSize(info.getSize()));
+                            break;
+                        case 3:
+                            info.setStateStr("0.00 %|失败");
+                            break;
+                    }
+                }
+            }
+        }
+        return infos;
+    }
+
+    @Override
+    public boolean rmFile(String fileId) {
+        String url = String.format("%s%s", gmvApiConfig.getHost(), gmvApiConfig.getRmFile());
+        Map<String, Object> map = new HashMap<>();
+        map.put("file_id", fileId);
+        GmvSessionResult<Boolean> result = GmvHttpUtil.post(url, map, Boolean.class);
+        if (result == null) {
+            throw new RuntimeException("删除失败");
+        }
+        if (result.getCode() != 200) {
+            throw new RuntimeException(result.getMsg());
+        }
+        return true;
+    }
+
+    private static String buildMbs(Integer bytesSec) {
+        if (bytesSec == null) {
+            return "-";
+        } else if (bytesSec >= 1000000) {
+            return bytesSec / 1000000 + "Mb/s";
+        } else if (bytesSec >= 1000) {
+            return bytesSec / 1000 + "Kb/s";
+        } else {
+            return bytesSec + "B/s";
+        }
+    }
+
+    private static String buildFileSize(double size) {
+        if (size >= 1024 * 1024 * 1024) {
+            double t = size / (1024 * 1024 * 1024);
+            return String.format("%.2f", t) + "|GB";
+        } else if (size >= 1024 * 1024) {
+            double t = size / (1024 * 1024);
+            return String.format("%.2f", t) + "|MB";
+        } else if (size >= 1024) {
+            return String.format("%.2f", size / 1024) + "|KB";
+        } else {
+            return size + "|B";
+        }
+    }
 
 }

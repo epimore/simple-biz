@@ -9,11 +9,15 @@ gmv:
     playBack: /session/api/play/back/stream
     playBackSeek: /session/api/play/back/seek
     playBackSpeed: /session/api/play/back/speed
-    save: /session/api/save/stream
     ptz: /session/api/control/ptz
+    download: /session/api/download/mp4
+    teardown: /session/api/download/stop
+    downing: /session/api/downing/info
+    rmFile: /session/api/rm/file
   token:
     enable: true
     whitelist:
+#      - /**
       - /user/login
       - /event/alarm
       - /**/swagger*/**
@@ -22,7 +26,6 @@ gmv:
       - /**/*.js
       - /**/*.css
       - /**/*.png
-
 
 swagger2:
   basePackage: cn.epimore.gmv.service.web

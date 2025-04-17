@@ -134,5 +134,33 @@
         </if>
         ORDER BY a.ID ASC
     </select>
+    <select id="getRecordVideoInfos" resultType="cn.epimore.gmv.api.model.RecordVideoInfo">
+        SELECT b.ID                                                     fileId,
+               a.DEVICE_ID                                              deviceId,
+               a.CHANNEL_ID                                             channelId,
+               a.CT                                                     createTime,
+               a.ST                                                     startTime,
+               a.ET                                                     endTime,
+               b.FILE_NAME                                              fileName,
+               CONCAT(b.DIR_PATH, "/", b.FILE_NAME, ".", b.FILE_FORMAT) videoUrl,
+               a.STATE                                                  state,
+               b.FILE_SIZE                                              size,
+               a.STREAM_APP_NAME                                        nodeName,
+               b.BIZ_TIME                                               bizTime
+        FROM GMV_RECORD a
+                 LEFT JOIN GMV_FILE_INFO b ON a.BIZ_ID = b.BIZ_ID
+            AND b.IS_DEL = 0
+            AND b.FILE_TYPE = 1
+        WHERE a.DEVICE_ID = #{deviceId,jdbcType=VARCHAR}
+          AND a.CHANNEL_ID = #{channelId,jdbcType=VARCHAR}
+        ORDER BY a.CT DESC
+    </select>
+    <select id="getRecordingCount" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM GMV_RECORD
+        WHERE STATE = 0
+          and DEVICE_ID = #{deviceId,jdbcType=VARCHAR}
+          AND CHANNEL_ID = #{channelId,jdbcType=VARCHAR}
+    </select>
 
 </mapper>

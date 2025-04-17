@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 @RestController
 @RequestMapping("/opt")
@@ -28,7 +29,7 @@ public class DcOptController {
     private DcOptApi dcOptApi;
 
     @PostMapping("/play/live")
-    @ApiOperation(value = "/play/live", notes = "获取实时直播地址失败")
+    @ApiOperation(value = "/play/live", notes = "获取实时直播地址")
     public ResponseEntity<StreamUri> getPlayLiveUri(@RequestBody @NotNull IdMap idMap) {
         logger.info("getPlayLiveUri:{}", JSON.toJSONString(idMap));
         try {
@@ -41,7 +42,7 @@ public class DcOptController {
     }
 
     @PostMapping("/play/back")
-    @ApiOperation(value = "/play/back", notes = "获取历史回放地址失败")
+    @ApiOperation(value = "/play/back", notes = "获取历史回放地址")
     public ResponseEntity<StreamUri> getPlayBackUri(@RequestBody @NotNull PlayBackReq backReq) {
         logger.info("getPlayBackUri:{}", JSON.toJSONString(backReq));
         try {
@@ -91,6 +92,58 @@ public class DcOptController {
         } catch (Exception e) {
             logger.error("cmdControlPtz", e);
             return Result.failure("云台控制失败.");
+        }
+    }
+
+    @PostMapping("/create/down")
+    @ApiOperation(value = "/create/create", notes = "创建云端录像")
+    public ResponseEntity<Boolean> createDownloadTask(@RequestBody @NotNull PlayBackReq backReq) {
+        logger.info("createDownloadTask:{}", JSON.toJSONString(backReq));
+        try {
+            boolean b = dcOptApi.createDownloadTask(backReq);
+            return Result.success(b);
+        } catch (Exception e) {
+            logger.error("createDownloadTask", e);
+            return Result.failure("创建云端录像失败.");
+        }
+    }
+
+    @PostMapping("/down/info")
+    @ApiOperation(value = "/down/info", notes = "获取下载信息")
+    public ResponseEntity<List<RecordVideoInfo>> downTaskInfo(@RequestBody @NotNull IdMap idMap) {
+        logger.info("downTaskInfo:{}", JSON.toJSONString(idMap));
+        try {
+            List<RecordVideoInfo> infos = dcOptApi.downTaskInfo(idMap);
+            return Result.success(infos);
+        } catch (Exception e) {
+            logger.error("downTaskInfo", e);
+            return Result.failure("获取下载信息失败.");
+        }
+    }
+
+    @PostMapping("/teardown/task")
+    @ApiOperation(value = "/teardown/task", notes = "结束下载")
+    public ResponseEntity<Boolean> tearDownTask(@RequestBody @NotNull SingleParamModel<String> req) {
+        logger.info("tearDownTask:{}", JSON.toJSONString(req));
+        try {
+            boolean b = dcOptApi.tearDownTask(req.getParam());
+            return Result.success(b);
+        } catch (Exception e) {
+            logger.error("tearDownTask", e);
+            return Result.failure("结束下载失败.");
+        }
+    }
+
+    @PostMapping("/rm/file")
+    @ApiOperation(value = "/rm/file", notes = "物联删除文件")
+    public ResponseEntity<Boolean> rmFile(@RequestBody @NotNull SingleParamModel<String> req) {
+        logger.info("rmFile:{}", JSON.toJSONString(req));
+        try {
+            boolean b = dcOptApi.rmFile(req.getParam());
+            return Result.success(b);
+        } catch (Exception e) {
+            logger.error("rmFile", e);
+            return Result.failure("物联删除文件失败."); 
         }
     }
 }

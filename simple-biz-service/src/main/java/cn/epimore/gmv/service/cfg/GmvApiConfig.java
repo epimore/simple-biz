@@ -12,8 +12,11 @@ public class GmvApiConfig {
     private String playBack;
     private String playBackSeek;
     private String playBackSpeed;
-    private String save;
     private String ptz;
+    private String download;
+    private String teardown;
+    private String downing;
+    private String rmFile;
 
     public String getHost() {
         return host;
@@ -55,19 +58,43 @@ public class GmvApiConfig {
         this.playBackSpeed = playBackSpeed;
     }
 
-    public String getSave() {
-        return save;
-    }
-
-    public void setSave(String save) {
-        this.save = save;
-    }
-
     public String getPtz() {
         return ptz;
     }
 
     public void setPtz(String ptz) {
         this.ptz = ptz;
+    }
+
+    public String getDownload() {
+        return download;
+    }
+
+    public void setDownload(String download) {
+        this.download = download;
+    }
+
+    public String getTeardown() {
+        return teardown;
+    }
+
+    public void setTeardown(String teardown) {
+        this.teardown = teardown;
+    }
+
+    public String getDowning() {
+        return downing;
+    }
+
+    public void setDowning(String downing) {
+        this.downing = downing;
+    }
+
+    public String getRmFile() {
+        return rmFile;
+    }
+
+    public void setRmFile(String rmFile) {
+        this.rmFile = rmFile;
     }
 }
