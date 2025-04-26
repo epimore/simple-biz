@@ -8,6 +8,7 @@ import cn.epimore.gmv.service.service.api.DcOptApi;
 import cn.epimore.gmv.service.utils.DateTimeUtil;
 import cn.epimore.gmv.service.utils.GmvHttpUtil;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -138,10 +139,9 @@ public class DcOptApiImpl implements DcOptApi {
         Map<String, Object> map = new HashMap<>();
         map.put("device_id", backReq.getDeviceId());
         map.put("channel_id", backReq.getChannelId());
-        //idr,sps,pps冗余增加一秒，缓存一秒
-        map.put("st", st - 1);
-        map.put("et", et + 1);
-        GmvSessionResult<Boolean> result = GmvHttpUtil.post(url, map, Boolean.class);
+        map.put("st", st);
+        map.put("et", et);
+        GmvSessionResult<String> result = GmvHttpUtil.post(url, map, String.class);
         if (result == null) {
             throw new RuntimeException("创建下载任务失败");
         }
@@ -155,7 +155,7 @@ public class DcOptApiImpl implements DcOptApi {
     public boolean tearDownTask(String bizId) {
         String url = String.format("%s%s", gmvApiConfig.getHost(), gmvApiConfig.getTeardown());
         Map<String, Object> map = new HashMap<>();
-        map.put("stream_id", bizId);
+        map.put("param", bizId);
         GmvSessionResult<Boolean> result = GmvHttpUtil.post(url, map, Boolean.class);
         if (result == null) {
             throw new RuntimeException("停止失败");
@@ -173,10 +173,10 @@ public class DcOptApiImpl implements DcOptApi {
             for (RecordVideoInfo info : infos) {
                 long st = DateTimeUtil.toTimestampSeconds(info.getStartTime());
                 long et = DateTimeUtil.toTimestampSeconds(info.getEndTime());
-                if (info.getState() == 0) {
+                if (info.getState() == 0 && StringUtils.isNotEmpty(info.getBizId())) {
                     String url = String.format("%s%s", gmvApiConfig.getHost(), gmvApiConfig.getDowning());
                     Map<String, Object> map = new HashMap<>();
-                    map.put("stream_id", info.getFileId());
+                    map.put("stream_id", info.getBizId());
                     map.put("stream_server", info.getNodeName());
                     GmvSessionResult<RecordingInfo> result = GmvHttpUtil.post(url, map, RecordingInfo.class);
                     if (result == null) {
@@ -190,17 +190,13 @@ public class DcOptApiImpl implements DcOptApi {
                     RecordingInfo data = result.getData();
 
                     String mbs = buildMbs(data.getBytesSec());
-                    if (data.getTimestamp() < st) {
-                        info.setStateStr("-|" + mbs);
-                    }
-                    if (data.getTimestamp() >= st && data.getTimestamp() <= et) {
-                        //保留两位小数，装换为百分比字符串
-                        double ratio = (double) (data.getTimestamp() - st) / (et - st);
+                    //保留两位小数，装换为百分比字符串
+                    double ratio = (double) data.getTimestamp() / (et - st);
+                    if (ratio > 0.9728) {
+                        info.setStateStr("97.28 %|" + mbs);
+                    } else {
                         String percentStr = String.format("%.2f %%", ratio * 100);
                         info.setStateStr(percentStr + "|" + mbs);
-                    }
-                    if (data.getTimestamp() > et) {
-                        info.setStateStr("97.28 %|" + mbs);
                     }
                 } else {
                     switch (info.getState()) {
@@ -226,10 +222,10 @@ public class DcOptApiImpl implements DcOptApi {
     }
 
     @Override
-    public boolean rmFile(String fileId) {
+    public boolean rmFile(Long fileId) {
         String url = String.format("%s%s", gmvApiConfig.getHost(), gmvApiConfig.getRmFile());
         Map<String, Object> map = new HashMap<>();
-        map.put("file_id", fileId);
+        map.put("param", fileId);
         GmvSessionResult<Boolean> result = GmvHttpUtil.post(url, map, Boolean.class);
         if (result == null) {
             throw new RuntimeException("删除失败");

@@ -138,6 +138,7 @@
         SELECT b.ID                                                     fileId,
                a.DEVICE_ID                                              deviceId,
                a.CHANNEL_ID                                             channelId,
+               a.BIZ_ID                                                 bizId,
                a.CT                                                     createTime,
                a.ST                                                     startTime,
                a.ET                                                     endTime,

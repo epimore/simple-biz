@@ -13,6 +13,8 @@ public class RecordVideoInfo {
     private String deviceId;
     @ApiModelProperty("通道ID")
     private String channelId;
+    @ApiModelProperty("业务ID")
+    private String bizId;
     @ApiModelProperty("创建时间")
     private LocalDateTime createTime;
     @ApiModelProperty("录像开始时间")
@@ -146,5 +148,13 @@ public class RecordVideoInfo {
 
     public void setBizTime(LocalDateTime bizTime) {
         this.bizTime = bizTime;
+    }
+
+    public String getBizId() {
+        return bizId;
+    }
+
+    public void setBizId(String bizId) {
+        this.bizId = bizId;
     }
 }

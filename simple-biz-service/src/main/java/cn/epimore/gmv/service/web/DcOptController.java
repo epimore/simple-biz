@@ -136,7 +136,7 @@ public class DcOptController {
 
     @PostMapping("/rm/file")
     @ApiOperation(value = "/rm/file", notes = "物联删除文件")
-    public ResponseEntity<Boolean> rmFile(@RequestBody @NotNull SingleParamModel<String> req) {
+    public ResponseEntity<Boolean> rmFile(@RequestBody @NotNull SingleParamModel<Long> req) {
         logger.info("rmFile:{}", JSON.toJSONString(req));
         try {
             boolean b = dcOptApi.rmFile(req.getParam());

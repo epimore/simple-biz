@@ -31,5 +31,5 @@ public interface DcOptApi {
     List<RecordVideoInfo> downTaskInfo(IdMap idMap);
 
     //删除文件
-    boolean rmFile(String fileId);
+    boolean rmFile(Long fileId);
 }

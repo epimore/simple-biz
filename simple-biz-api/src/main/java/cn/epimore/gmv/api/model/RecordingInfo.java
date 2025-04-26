@@ -1,9 +1,14 @@
 package cn.epimore.gmv.api.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class RecordingInfo {
+    @JsonProperty("file_name")
     private String fileName;
+    @JsonProperty("file_size")
     private Long fileSize;
     private long timestamp;
+    @JsonProperty("bytes_sec")
     private Integer bytesSec;
 
     public String getFileName() {
