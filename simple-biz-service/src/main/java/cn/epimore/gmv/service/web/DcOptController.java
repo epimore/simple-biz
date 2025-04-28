@@ -8,14 +8,13 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import javax.annotation.Resource;
 import javax.validation.constraints.NotNull;
 import java.util.List;
 
@@ -25,7 +24,7 @@ import java.util.List;
 @Validated
 public class DcOptController {
     private final static Logger logger = LoggerFactory.getLogger(DcOptController.class);
-    @Resource
+    @Autowired
     private DcOptApi dcOptApi;
 
     @PostMapping("/play/live")
@@ -143,7 +142,19 @@ public class DcOptController {
             return Result.success(b);
         } catch (Exception e) {
             logger.error("rmFile", e);
-            return Result.failure("物联删除文件失败."); 
+            return Result.failure("物联删除文件失败.");
+        }
+    }
+
+    @PostMapping("/download/file")
+    @ApiOperation(value = "/download/file", notes = "下载文件")
+    public ResponseEntity<Resource> downloadFile(@RequestParam("fileId") Long fileId) {
+        logger.info("downloadFile:{}", fileId);
+        try {
+            return dcOptApi.downloadFile(fileId);
+        } catch (Exception e) {
+            logger.error("downloadFile", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 }

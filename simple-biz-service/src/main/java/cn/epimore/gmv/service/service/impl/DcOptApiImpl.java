@@ -12,8 +12,17 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.ZoneId;
 import java.util.HashMap;
 import java.util.List;
@@ -189,7 +198,7 @@ public class DcOptApiImpl implements DcOptApi {
                     }
                     RecordingInfo data = result.getData();
 
-                    String mbs = buildMbs(data.getBytesSec());
+                    String mbs = buildMbs(data.getBytesSec() * 8);
                     //保留两位小数，装换为百分比字符串
                     double ratio = (double) data.getTimestamp() / (et - st);
                     if (ratio > 0.9728) {
@@ -234,6 +243,29 @@ public class DcOptApiImpl implements DcOptApi {
             throw new RuntimeException(result.getMsg());
         }
         return true;
+    }
+
+    @Override
+    public ResponseEntity<Resource> downloadFile(Long fileId) throws UnsupportedEncodingException {
+        String filePath = deviceInfoMapper.getFilePath(fileId);
+        if (StringUtils.isEmpty(filePath)) {
+            return ResponseEntity.notFound().build();
+        }
+        File file = new File(filePath);
+        if (!file.exists()) {
+            return ResponseEntity.notFound().build();
+        }
+        Resource resource = new FileSystemResource(file);
+        String encodedFileName = URLEncoder.encode(file.getName(), StandardCharsets.UTF_8.name()).replaceAll("\\+", "%20");
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename*=UTF-8''" + encodedFileName);
+        headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_OCTET_STREAM_VALUE);
+        headers.add(HttpHeaders.CONTENT_LENGTH, String.valueOf(file.length()));
+
+        return ResponseEntity.ok()
+                .headers(headers)
+                .body(resource);
     }
 
     private static String buildMbs(Integer bytesSec) {

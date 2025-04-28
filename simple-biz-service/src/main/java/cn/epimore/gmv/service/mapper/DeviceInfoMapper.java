@@ -15,4 +15,6 @@ public interface DeviceInfoMapper {
     List<RecordVideoInfo> getRecordVideoInfos(IdMap idMap);
 
     int getRecordingCount(PlayBackReq req);
+
+    String getFilePath(Long fileId);
 }

@@ -143,7 +143,21 @@
                a.ST                                                     startTime,
                a.ET                                                     endTime,
                b.FILE_NAME                                              fileName,
-               CONCAT(b.DIR_PATH, "/", b.FILE_NAME, ".", b.FILE_FORMAT) videoUrl,
+               CONCAT(
+                       IF(
+                               b.DIR_PATH IS NULL OR b.DIR_PATH = '.',
+                               '',
+                               IF(
+                                       LEFT(b.DIR_PATH, 2) = './',
+                                       SUBSTRING(b.DIR_PATH, 2),
+                                       b.DIR_PATH
+                               )
+                       ),
+                       '/',
+                       b.FILE_NAME,
+                       '.',
+                       b.FILE_FORMAT
+               ) AS videoUrl,
                a.STATE                                                  state,
                b.FILE_SIZE                                              size,
                a.STREAM_APP_NAME                                        nodeName,
@@ -162,6 +176,16 @@
         WHERE STATE = 0
           and DEVICE_ID = #{deviceId,jdbcType=VARCHAR}
           AND CHANNEL_ID = #{channelId,jdbcType=VARCHAR}
+    </select>
+    <select id="getFilePath" resultType="java.lang.String">
+        SELECT
+            CONCAT( b.ABS_PATH, "/", b.FILE_NAME, ".", b.FILE_FORMAT ) videoUrl
+        FROM
+            GMV_FILE_INFO b
+        WHERE
+            b.IS_DEL = 0
+          AND b.FILE_TYPE = 1
+          AND b.ID = #{fileId}
     </select>
 
 </mapper>

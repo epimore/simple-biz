@@ -1,7 +1,10 @@
 package cn.epimore.gmv.service.service.api;
 
 import cn.epimore.gmv.api.model.*;
+import org.springframework.core.io.Resource;
+import org.springframework.http.ResponseEntity;
 
+import java.io.UnsupportedEncodingException;
 import java.util.List;
 
 public interface DcOptApi {
@@ -32,4 +35,6 @@ public interface DcOptApi {
 
     //删除文件
     boolean rmFile(Long fileId);
+
+    ResponseEntity<Resource> downloadFile(Long fileId) throws UnsupportedEncodingException;
 }
