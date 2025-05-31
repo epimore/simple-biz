@@ -17,7 +17,7 @@ gmv:
   token:
     enable: true
     whitelist:
-#      - /**
+      - /**
       - /user/login
       - /event/alarm
       - /**/swagger*/**
